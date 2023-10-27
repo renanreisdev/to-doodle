@@ -2,8 +2,14 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
+use App\Models\Priority;
+use App\Models\Task;
+use \App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+
+use function PHPUnit\Framework\callback;
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,7 +18,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
+        User::factory(5)->create();
+        Category::factory(15)->create();
+        Priority::factory(15)->create();
+        Task::factory(20)->create();
 
         // \App\Models\User::factory()->create([
         //     'name' => 'Test User',
