@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Models\Category;
+use App\Models\Priority;
+use App\Models\Task;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -21,6 +24,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'avatar'
     ];
 
     /**
@@ -42,4 +46,19 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function categories()
+    {
+        return $this->hasMany(Category::class);
+    }
+
+    public function priorities()
+    {
+        return $this->hasMany(Priority::class);
+    }
+
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
 }
