@@ -11,6 +11,16 @@ class HomeController extends Controller
     public function index(Request $request)
     {
 
+        if ($request->filter) {
+            $filterTask = $request->filter;
+        } else {
+            $filterTask = 'pending';
+        }
+
+        if ($filterTask !== 'all' && $filterTask !== 'pending' && $filterTask !== 'done') {
+            $filterTask = 'pending';
+        }
+
         if ($request->date) {
             $filteredDate = $request->date;
         } else {
@@ -35,7 +45,7 @@ class HomeController extends Controller
         }
 
         $carbonDate = Carbon::createFromDate($dateWithTask);
-        $data['date_as_string'] = $carbonDate->format('d \d\e ') . $carbonDate->translatedFormat('M \d\e y');
+        $data['date_as_string'] = $carbonDate->format('d \d\e ') . ucfirst($carbonDate->translatedFormat('M \d\e y'));
 
         $data['date_prev_button'] = $previousDateWithTask;
         $data['date_next_button'] = $nextDateWithTask;
@@ -46,6 +56,8 @@ class HomeController extends Controller
             ->where('is_done', false)
             ->orderBy('due_date')
             ->get();
+
+        $data['filterTask'] = $filterTask;
 
         return view('home', $data);
     }

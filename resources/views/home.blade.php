@@ -1,4 +1,4 @@
-<x-layout>
+<x-layout :date=$date_as_string :data=$tasks :$filterTask>
     <x-slot:button>
         <x-button title="Nova Tarefa" />
     </x-slot:button>
@@ -80,7 +80,17 @@
 
             <div data-tasks-container class="h-full overflow-hidden transition-all ease-linear duration-200">
                 @foreach ($tasks as $task)
-                    <x-task :data=$task />
+                    @if ($filterTask === 'done')
+                        @if ($task->is_done)
+                            <x-task :data=$task />
+                        @endif
+                    @elseif ($filterTask === 'pending')
+                        @if (!$task->is_done)
+                            <x-task :data=$task />
+                        @endif
+                    @else
+                        <x-task :data=$task />
+                    @endif
                 @endforeach
             </div>
     @endif
@@ -129,5 +139,17 @@
             tasks.classList.toggle('h-full');
             tasks.classList.toggle('h-0');
         }
+    }
+</script>
+
+<script>
+    function handleFilterTask(element) {
+        document.querySelectorAll('ul > li > div').forEach(div => {
+            if (div.getAttribute('id') != element.getAttribute('id')) {
+                div.classList.remove('bg-secondary2');
+            } else {
+                div.classList.add('bg-secondary2');
+            }
+        })
     }
 </script>

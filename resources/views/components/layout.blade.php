@@ -1,3 +1,15 @@
+@php
+    $totalTasks = count($data);
+    $tasksDone = 0;
+
+    foreach ($data as $task) {
+        if ($task['is_done']) {
+            $tasksDone++;
+        }
+    }
+    $percentageTasksDone = ($tasksDone / $totalTasks) * 100;
+@endphp
+
 <!DOCTYPE html>
 <html lang="pt-BR   ">
 
@@ -61,40 +73,37 @@
         <nav class="w-64 p-5 flex flex-col gap-5 bg-primary">
             <div class="flex flex-col gap-2">
                 <div class="flex justify-between items-center text-secondary">
-                    <div style="--deg-progress: 216deg;"
+                    <div style="--deg-progress: {{ round($percentageTasksDone) * 3.6 }}deg;"
                         class="relative w-20 h-20 flex justify-center items-center rounded-full bg-circle-progress before:absolute before:w-16 before:h-16 before:rounded-full before:bg-primary">
-                        <span class="text-white_td text-lg z-10">60%</span>
+                        <span class="text-white_td text-lg z-10">{{ round($percentageTasksDone) . '%' }}</span>
                     </div>
-                    <p>Tarefas: 3/5</p>
+                    <p>Tarefas: {{ $tasksDone . '/' . $totalTasks }}</p>
                 </div>
-                <p class="text-center text-base tracking-wide text-white_td">Progresso do dia</p>
+                <p class="text-center text-base tracking-wide text-white_td">{{ $date }}</p>
             </div>
 
             <div class="h-[1px] w-full bg-[#36404D]"></div>
 
             <ul class="text-white_td text-base tracking-wide">
                 <li>
-                    <a href="/"
-                        class="p-3 flex justify-between rounded-md transition-all ease-linear duration-200 hover:bg-secondary2">
-                        Hoje <span>2</span>
+                    <a href="{{ route('home', ['filter' => 'pending', 'date' => $data->first()->due_date]) }}"
+                        id="filter-task-pending" onclick="handleFilterTask(this)"
+                        class="{{ $filterTask === 'pending' ? 'bg-secondary2' : '' }} p-3 flex justify-between rounded-md cursor-pointer transition-all ease-linear duration-200 hover:bg-secondary2">
+                        Tarefas pendentes
                     </a>
                 </li>
                 <li>
-                    <a href="/"
-                        class="p-3 flex justify-between rounded-md transition-all ease-linear duration-200 hover:bg-secondary2">
-                        Concluídas Hoje<span>3</span>
+                    <a href="{{ route('home', ['filter' => 'done', 'date' => $data->first()->due_date]) }}"
+                        id="filter-task-done" onclick="handleFilterTask(this)"
+                        class="{{ $filterTask === 'done' ? 'bg-secondary2' : '' }} p-3 my-2 flex justify-between rounded-md cursor-pointer transition-all ease-linear duration-200 hover:bg-secondary2">
+                        Tarefas concluidas
                     </a>
                 </li>
                 <li>
-                    <a href="/"
-                        class="p-3 flex justify-between rounded-md transition-all ease-linear duration-200 hover:bg-secondary2">
-                        Amanhã <span>3</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="/"
-                        class="p-3 flex justify-between rounded-md transition-all ease-linear duration-200 hover:bg-secondary2">
-                        Atrasadas <span>2</span>
+                    <a href="{{ route('home', ['filter' => 'all', 'date' => $data->first()->due_date]) }}"
+                        id="filter-task-all" onclick="handleFilterTask(this)"
+                        class="{{ $filterTask === 'all' ? 'bg-secondary2' : '' }} p-3 flex justify-between rounded-md cursor-pointer transition-all ease-linear duration-200 hover:bg-secondary2">
+                        Todas tarefas
                     </a>
                 </li>
             </ul>
