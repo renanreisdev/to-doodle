@@ -99,7 +99,7 @@
                 </li>
             </ul>
         </nav>
-        <main class="flex-1 p-5 flex flex-col gap-10">
+        <main class="flex-1 p-5 flex flex-col gap-10 overflow-auto scroll-smooth">
             {{ $slot }}
         </main>
     </div>

@@ -1,14 +1,19 @@
 @php
-    $icons = [
-        'pessoal' => 'M17 18.5C20.7266 18.5 23.75 15.4766 23.75 11.75C23.75 8.02344 20.7266 5 17 5C13.2734 5 10.25 8.02344 10.25 11.75C10.25 15.4766 13.2734 18.5 17 18.5ZM23 20H20.4172C19.3766 20.4781 18.2188 20.75 17 20.75C15.7813 20.75 14.6281 20.4781 13.5828 20H11C7.68594 20 5 22.6859 5 26V26.75C5 27.9922 6.00781 29 7.25 29H26.75C27.9922 29 29 27.9922 29 26.75V26C29 22.6859 26.3141 20 23 20Z',
-        'trabalho' => '',
-    ];
+    use Carbon\Carbon;
+
+    $today = Carbon::createFromDate(date('Y-m-d'));
+    $taskDate = Carbon::createFromDate($data['due_date']);
 @endphp
 
-<div
+<div onClick="handleCheckTask({{ $data['id'] }})"
     class="p-3 flex justify-between items-center border-b border-gray_td-200 cursor-pointer transition-all ease-linear duration-200 hover:rounded-md hover:bg-gray_td-100">
     <div class="flex items-center gap-3">
-        <input type="checkbox">
+        <label data-check-{{ $data['id'] }} class="w-5 h-5 border-2 border-secondary2 rounded-full cursor-pointer">
+        </label>
+
+        <input id="task-{{ $data['id'] }}" type="checkbox" @if ($data && $data['is_done']) checked @endif
+            class="hidden cursor-pointer" />
+
         <p class="text-base tracking-wider">{{ $data['title'] ?? '' }}</p>
     </div>
 
@@ -25,19 +30,26 @@
             </svg>
         @endif
 
-        @if ($data['date'] < new DateTime())
-            <p class="w-20 text-right">{{ $data['date'] ?? '' }}</p>
+        @if ($taskDate < $today)
+            <p class="w-20 text-right">{{ date('d/m/y', strtotime($data['due_date'])) }}</p>
         @endif
         <div class="w-28 flex justify-end items-center gap-1">
-            <p>{{ $data['priority'] ?? '' }}</p>
-            <div class="{{ $data['priority-color'] }} rounded-full p-2"></div>
+            <p class="max-w-[80px] truncate">{{ $data['priority']->title ?? '' }}</p>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="10" cy="10" r="10" fill="{{ $data['priority']->color }}" />
+            </svg>
         </div>
 
         <div class="w-28 flex justify-end items-center gap-1">
-            <p>{{ $data['category'] ?? '' }}</p>
+            <p class="max-w-[80px] truncate">
+                {{ $data['category']->title ?? '' }}
+            </p>
             <svg width="24" height="24" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="{{ $icons[$data['category-icon']] }}" fill="#1ABDB1" />
-                <rect x="0.5" y="0.5" width="33" height="33" rx="4.5" stroke="#1ABDB1" />
+                <path
+                    d="M17 18.5C20.7266 18.5 23.75 15.4766 23.75 11.75C23.75 8.02344 20.7266 5 17 5C13.2734 5 10.25 8.02344 10.25 11.75C10.25 15.4766 13.2734 18.5 17 18.5ZM23 20H20.4172C19.3766 20.4781 18.2188 20.75 17 20.75C15.7813 20.75 14.6281 20.4781 13.5828 20H11C7.68594 20 5 22.6859 5 26V26.75C5 27.9922 6.00781 29 7.25 29H26.75C27.9922 29 29 27.9922 29 26.75V26C29 22.6859 26.3141 20 23 20Z"
+                    fill="{{ $data['category']->color }}" />
+                <rect x="0.5" y="0.5" width="33" height="33" rx="4.5"
+                    stroke="{{ $data['category']->color }}" />
             </svg>
         </div>
 
@@ -65,3 +77,18 @@
         </div>
     </div>
 </div>
+
+<script>
+    function handleCheckTask(idTask) {
+        const labelCheck = document.querySelector('[data-check-' + idTask + ']');
+        const tasks = document.querySelector('#task-' + idTask);
+
+        tasks.checked = !tasks.checked
+
+        if (tasks.checked) {
+            labelCheck.classList.add('bg-secondary2');
+        } else {
+            labelCheck.classList.remove('bg-secondary2');
+        }
+    }
+</script>
