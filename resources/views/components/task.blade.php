@@ -8,7 +8,8 @@
 <div onClick="handleCheckTask({{ $data['id'] }})"
     class="p-3 flex justify-between items-center border-b border-gray_td-200 cursor-pointer transition-all ease-linear duration-200 hover:rounded-md hover:bg-gray_td-100">
     <div class="flex items-center gap-3">
-        <label data-check-{{ $data['id'] }} class="w-5 h-5 border-2 border-secondary2 rounded-full cursor-pointer">
+        <label data-check-{{ $data['id'] }}
+            class="{{ $data && $data['is_done'] ? 'bg-secondary2' : '' }} w-5 h-5 border-2 border-secondary2 rounded-full cursor-pointer">
         </label>
 
         <input id="task-{{ $data['id'] }}" type="checkbox" @if ($data && $data['is_done']) checked @endif
