@@ -45,12 +45,12 @@ class HomeController extends Controller
         }
 
         $carbonDate = Carbon::createFromDate($dateWithTask);
-        $data['date_as_string'] = $carbonDate->format('d \d\e ') . ucfirst($carbonDate->translatedFormat('M \d\e y'));
+        $data['date_as_string'] = $carbonDate->format('d \d\e ') . ucfirst($carbonDate->translatedFormat('M \d\e Y'));
 
         $data['date_prev_button'] = $previousDateWithTask;
         $data['date_next_button'] = $nextDateWithTask;
 
-        $data['tasks'] = Task::whereDate('due_date', $dateWithTask)->get();
+        $data['tasks'] = Task::whereDate('due_date', $dateWithTask)->orderBy('is_done')->get();
 
         $data['late_tasks'] = Task::where('due_date', '<', now())
             ->where('is_done', false)
