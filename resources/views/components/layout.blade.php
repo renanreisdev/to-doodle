@@ -1,15 +1,3 @@
-@php
-    $totalTasks = count($data);
-    $tasksDone = 0;
-
-    foreach ($data as $task) {
-        if ($task['is_done']) {
-            $tasksDone++;
-        }
-    }
-    $percentageTasksDone = ($tasksDone / $totalTasks) * 100;
-@endphp
-
 <!DOCTYPE html>
 <html lang="pt-BR   ">
 
@@ -73,11 +61,11 @@
         <nav class="w-64 p-5 flex flex-col gap-5 bg-primary">
             <div class="flex flex-col gap-2">
                 <div class="flex justify-between items-center text-secondary">
-                    <div style="--deg-progress: {{ round($percentageTasksDone) * 3.6 }}deg;"
+                    <div data-task-deg-progress style="--deg-progress: 5deg;"
                         class="relative w-20 h-20 flex justify-center items-center rounded-full bg-circle-progress before:absolute before:w-16 before:h-16 before:rounded-full before:bg-primary">
-                        <span class="text-white_td text-lg z-10">{{ round($percentageTasksDone) . '%' }}</span>
+                        <span data-task-percent-progress class="text-white_td text-lg z-10">0%</span>
                     </div>
-                    <p>Tarefas: {{ $tasksDone . '/' . $totalTasks }}</p>
+                    <p data-task-quantity-progress>Tarefas: 2/5</p>
                 </div>
                 <p class="text-center text-base tracking-wide text-white_td">{{ $date }}</p>
             </div>
@@ -86,25 +74,22 @@
 
             <ul class="text-white_td text-base tracking-wide">
                 <li>
-                    <a href="{{ route('home', ['filter' => 'pending', 'date' => $data->first()->due_date]) }}"
-                        id="filter-task-pending" onclick="handleFilterTask(this)"
-                        class="{{ $filterTask === 'pending' ? 'bg-secondary2' : '' }} p-3 flex justify-between rounded-md cursor-pointer transition-all ease-linear duration-200 hover:bg-secondary2">
+                    <div id="filter-task-pending" onclick="handleFilterTask(this)"
+                        class="p-3 flex justify-between rounded-md cursor-pointer transition-all ease-linear duration-200 hover:bg-secondary2">
                         Tarefas pendentes
-                    </a>
+                    </div>
                 </li>
                 <li>
-                    <a href="{{ route('home', ['filter' => 'done', 'date' => $data->first()->due_date]) }}"
-                        id="filter-task-done" onclick="handleFilterTask(this)"
-                        class="{{ $filterTask === 'done' ? 'bg-secondary2' : '' }} p-3 my-2 flex justify-between rounded-md cursor-pointer transition-all ease-linear duration-200 hover:bg-secondary2">
+                    <div id="filter-task-done" onclick="handleFilterTask(this)"
+                        class="p-3 my-2 flex justify-between rounded-md cursor-pointer transition-all ease-linear duration-200 hover:bg-secondary2">
                         Tarefas concluidas
-                    </a>
+                    </div>
                 </li>
                 <li>
-                    <a href="{{ route('home', ['filter' => 'all', 'date' => $data->first()->due_date]) }}"
-                        id="filter-task-all" onclick="handleFilterTask(this)"
-                        class="{{ $filterTask === 'all' ? 'bg-secondary2' : '' }} p-3 flex justify-between rounded-md cursor-pointer transition-all ease-linear duration-200 hover:bg-secondary2">
+                    <div id="filter-task-all" onclick="handleFilterTask(this)"
+                        class="p-3 flex justify-between rounded-md cursor-pointer transition-all ease-linear duration-200 hover:bg-secondary2">
                         Todas tarefas
-                    </a>
+                    </div>
                 </li>
             </ul>
         </nav>
@@ -112,6 +97,334 @@
             {{ $slot }}
         </main>
     </div>
+
+    @foreach ($lateTasks as $task)
+        <div class="hidden" data-late-tasks-hidden data-div-late-task-id="{{ $task->id }}"
+            data-div-late-task-is-done="{{ $task->is_done }}" data-div-late-task-title="{{ $task->title }}"
+            data-div-late-task-description="{{ $task->description }}" data-div-late-task-date="{{ $task->date }}"
+            data-div-late-task-category-title="{{ $task->category->title }}"
+            data-div-late-task-category-color="{{ $task->category->color }}"
+            data-div-late-task-priority-title="{{ $task->priority->title }}"
+            data-div-late-task-priority-color="{{ $task->priority->color }}">
+        </div>
+    @endforeach
+
+    @foreach ($tasks as $task)
+        <div class="hidden" data-tasks-hidden data-div-task-id="{{ $task->id }}"
+            data-div-task-is-done="{{ $task->is_done }}" data-div-task-title="{{ $task->title }}"
+            data-div-task-description="{{ $task->description }}" data-div-task-date="{{ $task->date }}"
+            data-div-task-category-title="{{ $task->category->title }}"
+            data-div-task-category-color="{{ $task->category->color }}"
+            data-div-task-priority-title="{{ $task->priority->title }}"
+            data-div-task-priority-color="{{ $task->priority->color }}">
+        </div>
+    @endforeach
+
+    <script>
+        const lateTasksDiv = document.querySelectorAll('[data-late-tasks-container] > div')
+        lateTasksDiv.forEach(task => {
+            task.addEventListener('click', handleCheckTask)
+        });
+
+        const tasksDiv = document.querySelectorAll('[data-tasks-container] > div')
+        tasksDiv.forEach(task => {
+            task.addEventListener('click', handleCheckTask)
+        });
+
+        const lateTasksArray = []
+        const tasksArray = []
+
+        document.querySelectorAll('[data-late-tasks-hidden]').forEach(task => {
+            lateTasksArray.push({
+                id: task.getAttribute('data-div-late-task-id'),
+                is_done: task.getAttribute('data-div-late-task-is-done'),
+                title: task.getAttribute('data-div-late-task-title'),
+                description: task.getAttribute('data-div-late-task-description'),
+                due_date: task.getAttribute('data-div-late-task-date'),
+                category: {
+                    title: task.getAttribute('data-div-late-task-category-title'),
+                    color: task.getAttribute('data-div-late-task-category-color')
+                },
+                priority: {
+                    title: task.getAttribute('data-div-late-task-priority-title'),
+                    color: task.getAttribute('data-div-late-task-priority-color')
+                }
+            })
+        })
+
+        document.querySelectorAll('[data-tasks-hidden]').forEach(task => {
+            tasksArray.push({
+                id: task.getAttribute('data-div-task-id'),
+                is_done: task.getAttribute('data-div-task-is-done'),
+                title: task.getAttribute('data-div-task-title'),
+                description: task.getAttribute('data-div-task-description'),
+                due_date: task.getAttribute('data-div-task-date'),
+                category: {
+                    title: task.getAttribute('data-div-task-category-title'),
+                    color: task.getAttribute('data-div-task-category-color')
+                },
+                priority: {
+                    title: task.getAttribute('data-div-task-priority-title'),
+                    color: task.getAttribute('data-div-task-priority-color')
+                }
+            })
+        })
+
+        function insertTasks(tasksDiv, tasksArray, compareTasks = false) {
+            let equalTasks = false;
+            tasksDiv.forEach((task, index) => {
+                if (compareTasks !== false) {
+                    compareTasks.forEach(compareTask => {
+                        if (compareTask.id === tasksArray[index].id) {
+                            task.classList.add('hidden')
+                            equalTasks = true
+                        }
+                    })
+                }
+
+                if (tasksArray[index].is_done) {
+                    task.querySelector('label').classList.add('bg-secondary2')
+                    task.querySelector('input[type="checkbox"]').checked = true
+                } else {
+                    task.querySelector('label').classList.remove('bg-secondary2')
+                    task.querySelector('input[type="checkbox"]').checked = false
+                }
+
+                task.querySelector('p').textContent = tasksArray[index].title
+                task.querySelector('p').title = tasksArray[index].title
+
+                if (tasksArray[index].description.length > 0) {
+                    task.querySelector('[data-task-description-svg]').classList.remove('hidden')
+                } else {
+                    task.querySelector('[data-task-description-svg]').classList.add('hidden')
+                }
+
+                task.querySelector('[data-task-div-priority] > p').textContent = tasksArray[index].priority
+                    .title
+                task.querySelector('[data-task-div-priority] > svg > circle')
+                    .setAttribute('fill', tasksArray[index].priority.color)
+
+                task.querySelector('[data-task-div-category] > p').textContent = tasksArray[index].category
+                    .title
+                task.querySelector('[data-task-div-category] > svg > path')
+                    .setAttribute('fill', tasksArray[index].priority.color)
+                task.querySelector('[data-task-div-category] > svg > rect')
+                    .setAttribute('stroke', tasksArray[index].priority.color)
+
+            })
+        }
+        insertTasks(tasksDiv, tasksArray);
+        insertTasks(lateTasksDiv, lateTasksArray, tasksArray);
+
+        function handleShowLateTasks() {
+            let buttonLateTasks = document.querySelector('[data-button-late-tasks]');
+            let tasks = document.querySelector('[data-late-tasks-container]');
+
+            buttonLateTasks.classList.toggle('-rotate-90');
+
+            if (tasks.classList.contains('hidden')) {
+                tasks.classList.toggle('hidden');
+                setTimeout(() => {
+                    tasks.classList.toggle('h-full');
+                    tasks.classList.toggle('h-0');
+                }, 1);
+            } else {
+                setTimeout(() => {
+                    tasks.classList.toggle('hidden');
+                }, 200);
+                tasks.classList.toggle('h-full');
+                tasks.classList.toggle('h-0');
+            }
+        }
+
+        function handleShowTasks() {
+            let buttonTasks = document.querySelector('[data-button-tasks]');
+            let tasks = document.querySelector('[data-tasks-container]');
+
+            buttonTasks.classList.toggle('-rotate-90');
+
+            if (tasks.classList.contains('hidden')) {
+                tasks.classList.toggle('hidden');
+                setTimeout(() => {
+                    tasks.classList.toggle('h-full');
+                    tasks.classList.toggle('h-0');
+                }, 1);
+            } else {
+                setTimeout(() => {
+                    tasks.classList.toggle('hidden');
+                }, 200);
+                tasks.classList.toggle('h-full');
+                tasks.classList.toggle('h-0');
+            }
+        }
+
+
+        function updateGraphTasks() {
+            console.log("TOTAL TASKS => " + tasksArray.length)
+            console.log("TASKS DONE => " + tasksArray.filter(task => task.is_done).length)
+            console.log("PERCENTAGE => " + (tasksArray.filter(task => task.is_done).length / tasksArray.length) * 100)
+            let totalTasks = tasksArray.length
+            let tasksDone = tasksArray.filter(task => task.is_done).length
+            let percentageTasksDone = (tasksDone / totalTasks) * 100
+
+            const progressGraph = document.querySelector('[data-task-deg-progress]')
+            const quantityProgress = document.querySelector('[data-task-quantity-progress]')
+            const percentProgress = document.querySelector('[data-task-percent-progress]')
+            let percent = 0;
+
+            quantityProgress.textContent = `${tasksDone}/${totalTasks}`
+
+            const interval = setInterval(() => {
+                if (percent <= percentageTasksDone) {
+                    progressGraph.style.setProperty('--deg-progress', percent * 3.6 + 'deg')
+                    percentProgress.textContent = `${percent}%`
+                    percent++;
+                } else {
+                    clearInterval(interval)
+                }
+            }, 10);
+        }
+
+        function handleFilterTask(element) {
+            if (element) {
+                localStorage.setItem('filter', element.getAttribute('id').replace('filter-task-', ''))
+            }
+
+            if (localStorage.getItem('filter') === null) {
+                localStorage.setItem('filter', 'pending')
+            }
+
+            const filter = localStorage.getItem('filter')
+
+            const filterTask = document.querySelectorAll('ul > li > div');
+            filterTask.forEach(div => {
+                if (div.getAttribute('id') == 'filter-task-' + filter) {
+                    div.classList.add('bg-secondary2')
+                } else {
+                    div.classList.remove('bg-secondary2')
+                }
+            })
+
+            const taskElement = document.querySelectorAll('[data-tasks-container] > div')
+
+            taskElement.forEach(task => {
+                const inputElement = task.querySelector('input[type="checkbox"]')
+
+                if (filter === 'all') {
+                    task.classList.remove('hidden')
+                } else if (filter === 'done') {
+                    if (inputElement.checked) {
+                        task.classList.remove('hidden')
+                    } else {
+                        task.classList.add('hidden')
+                    }
+                } else {
+                    if (!inputElement.checked) {
+                        task.classList.remove('hidden')
+                    } else {
+                        task.classList.add('hidden')
+                    }
+                }
+            })
+        }
+
+        function openTaskDescription() {
+            console.log('oi')
+        }
+
+        async function handleCheckTask(element) {
+            let isLateTask = false;
+            console.log(element.currentTarget)
+            isLateTask = lateTasksArray.some(task => task.id === element.currentTarget.getAttribute('data-task-id'));
+            // tasksArray.forEach(task => {
+            //     console.log("TASK ID => " + task.id + ' --- ' + "ELEMENT ID => " + element.currentTarget
+            //         .getAttribute('data-task-id'))
+            //     if (task.id !== element.currentTarget.getAttribute('data-task-id')) {
+            //         isLateTask = true
+            //     } else {
+            //         isLateTask = false
+            //     }
+            // })
+
+            console.log("IS LATE ? ", isLateTask)
+
+            if (element.target.getAttribute('data-task-description') !== null) {
+                openTaskDescription()
+                return
+            }
+
+            const taskId = element.currentTarget.getAttribute('data-task-id')
+
+            const divTask = element.currentTarget
+            const labelCheck = divTask.querySelector('label')
+            const inputTask = divTask.querySelector('input[type="checkbox"]')
+
+            inputTask.checked = !inputTask.checked
+
+            if (inputTask.checked) {
+                labelCheck.classList.add('bg-secondary2')
+            } else {
+                labelCheck.classList.remove('bg-secondary2')
+            }
+
+            const status = inputTask.checked
+            const url = '{{ route('task.update') }}'
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json',
+                    'accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    taskId,
+                    status,
+                    _token: '{{ csrf_token() }}'
+                })
+            })
+
+            const result = await response.json()
+
+            if (!result.success) {
+                inputTask.checked = !inputTask.checked
+
+                if (inputTask.checked) {
+                    labelCheck.classList.add('bg-secondary2')
+                } else {
+                    labelCheck.classList.remove('bg-secondary2')
+                }
+            } else {
+
+                if (isLateTask) {
+                    isLateTaskEmpty = false
+                    lateTasksArray.forEach(task => {
+                        if (task.id === taskId) {
+                            task.is_done = inputTask.checked
+                            divTask.classList.add('hidden')
+                        }
+                    })
+                    if (lateTasksArray.every(task => task.is_done)) {
+                        document.querySelector('[data-late-tasks-info]').classList.add('hidden')
+                    }
+                    insertTasks(lateTasksDiv, lateTasksArray)
+                } else {
+                    tasksArray.forEach(task => {
+                        if (task.id === taskId) {
+                            task.is_done = inputTask.checked
+                        }
+                    })
+                    insertTasks(tasksDiv, tasksArray)
+                }
+
+                handleFilterTask()
+                updateGraphTasks()
+            }
+        }
+
+        handleFilterTask()
+        updateGraphTasks()
+    </script>
+
 </body>
 
 </html>

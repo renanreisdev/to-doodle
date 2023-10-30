@@ -1,10 +1,10 @@
-<x-layout :date=$date_as_string :data=$tasks :$filterTask>
+<x-layout :date=$date_as_string :lateTasks=$late_tasks :tasks=$tasks>
     <x-slot:button>
         <x-button title="Nova Tarefa" />
     </x-slot:button>
 
     @if (count($late_tasks) > 0)
-        <div class="text-primary flex-col transition-all ease-linear">
+        <div data-late-tasks-info class="text-primary flex-col transition-all ease-linear">
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-medium tracking-wide mb-5">Atrasadas</h2>
 
@@ -80,76 +80,10 @@
 
             <div data-tasks-container class="h-full overflow-hidden transition-all ease-linear duration-200">
                 @foreach ($tasks as $task)
-                    @if ($filterTask === 'done')
-                        @if ($task->is_done)
-                            <x-task :data=$task />
-                        @endif
-                    @elseif ($filterTask === 'pending')
-                        @if (!$task->is_done)
-                            <x-task :data=$task />
-                        @endif
-                    @else
-                        <x-task :data=$task />
-                    @endif
+                    <x-task :data=$task />
                 @endforeach
             </div>
+        </div>
     @endif
 
-    </div>
 </x-layout>
-
-<script>
-    function handleShowLateTasks() {
-        let buttonLateTasks = document.querySelector('[data-button-late-tasks]');
-        let tasks = document.querySelector('[data-late-tasks-container]');
-
-        buttonLateTasks.classList.toggle('-rotate-90');
-
-        if (tasks.classList.contains('hidden')) {
-            tasks.classList.toggle('hidden');
-            setTimeout(() => {
-                tasks.classList.toggle('h-full');
-                tasks.classList.toggle('h-0');
-            }, 1);
-        } else {
-            setTimeout(() => {
-                tasks.classList.toggle('hidden');
-            }, 200);
-            tasks.classList.toggle('h-full');
-            tasks.classList.toggle('h-0');
-        }
-    }
-
-    function handleShowTasks() {
-        let buttonTasks = document.querySelector('[data-button-tasks]');
-        let tasks = document.querySelector('[data-tasks-container]');
-
-        buttonTasks.classList.toggle('-rotate-90');
-
-        if (tasks.classList.contains('hidden')) {
-            tasks.classList.toggle('hidden');
-            setTimeout(() => {
-                tasks.classList.toggle('h-full');
-                tasks.classList.toggle('h-0');
-            }, 1);
-        } else {
-            setTimeout(() => {
-                tasks.classList.toggle('hidden');
-            }, 200);
-            tasks.classList.toggle('h-full');
-            tasks.classList.toggle('h-0');
-        }
-    }
-</script>
-
-<script>
-    function handleFilterTask(element) {
-        document.querySelectorAll('ul > li > div').forEach(div => {
-            if (div.getAttribute('id') != element.getAttribute('id')) {
-                div.classList.remove('bg-secondary2');
-            } else {
-                div.classList.add('bg-secondary2');
-            }
-        })
-    }
-</script>
